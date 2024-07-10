@@ -3,7 +3,7 @@ import sys
 
 pygame.init()
 
-TITLE = "Demo Game"
+TITLE = "My Pygame Demo"
 WIDTH = 400
 HEIGHT = 300
 TILE_SIZE = 20
