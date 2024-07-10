@@ -51,7 +51,7 @@ def load_map_from_file(filename):
 tile_map = load_map_from_file("map_0.txt")
 collision_map = load_map_from_file("collision_0.txt")
 
-player = pygame.Rect(10, 10, 27, 32)
+player = pygame.Rect(100, 20, 27, 32)
 player_image = player0.idle
 
 walking = False
@@ -77,6 +77,15 @@ def is_passable(rect):
             return False
     return True
 
+def update_camera(player, camera, screen_width, screen_height, map_width, map_height):
+    camera.x = player.x + player.width // 2 - screen_width // 2
+    camera.y = player.y + player.height // 2 - screen_height // 2
+    
+    camera.x = max(0, min(camera.x, map_width - screen_width))
+    camera.y = max(0, min(camera.y, map_height - screen_height))
+
+camera = pygame.Rect(0, 0, WIDTH, HEIGHT)
+
 clock = pygame.time.Clock()
 while True:
     for event in pygame.event.get():
@@ -90,13 +99,13 @@ while True:
     if keys[pygame.K_LEFT] and player.left > 0 and is_passable(player.move(-2, 0)):
         player.x -= 2
         walking = True
-    if keys[pygame.K_RIGHT] and player.right < WIDTH and is_passable(player.move(2, 0)):
+    if keys[pygame.K_RIGHT] and player.right < len(tile_map[0]) * TILE_SIZE and is_passable(player.move(2, 0)):
         player.x += 2
         walking = True
     if keys[pygame.K_UP] and player.top > 0 and is_passable(player.move(0, -2)):
         player.y -= 2
         walking = True
-    if keys[pygame.K_DOWN] and player.bottom < HEIGHT and is_passable(player.move(0, 2)):
+    if keys[pygame.K_DOWN] and player.bottom < len(tile_map) * TILE_SIZE and is_passable(player.move(0, 2)):
         player.y += 2
         walking = True
 
@@ -108,12 +117,13 @@ while True:
     else:
         player_image = player0.idle
 
+    update_camera(player, camera, WIDTH, HEIGHT, len(tile_map[0]) * TILE_SIZE, len(tile_map) * TILE_SIZE)
+
     screen.fill((0, 0, 0))
     for y, row in enumerate(tile_map):
         for x, tile_id in enumerate(row):
-            screen.blit(tiles[tile_id], (x * TILE_SIZE, y * TILE_SIZE))
-    screen.blit(player_image, player.topleft)
+            screen.blit(tiles[tile_id], (x * TILE_SIZE - camera.x, y * TILE_SIZE - camera.y))
+    screen.blit(player_image, (player.x - camera.x, player.y - camera.y))
 
     pygame.display.flip()
-
     clock.tick(FPS)
